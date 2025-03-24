@@ -33,7 +33,7 @@ class _MyAppState extends State<MyApp> {
         useMaterial3: true,
       ),
       // home: const HomeScreen(),
-      initialRoute: AppRoutes.signup,
+      initialRoute: AppRoutes.signupOne,
       routes: AppRoutes.routes,
     );
   }

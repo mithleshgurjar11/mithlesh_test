@@ -3,9 +3,9 @@ import 'dart:io';
 import 'package:demo/constants/app_constant.dart';
 import 'package:demo/constants/color_resources.dart';
 import 'package:demo/provider/user_provider.dart';
-import 'package:demo/screen/auth/login_screen.dart';
 import 'package:demo/screen/auth/signup/sigup_widget.dart';
 import 'package:demo/screen/home/home_screen.dart';
+import 'package:demo/service/service.dart';
 import 'package:demo/utils/styles.dart';
 import 'package:demo/widgets/custom_app_bar.dart';
 import 'package:demo/widgets/custom_button.dart';
@@ -15,6 +15,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -200,5 +201,104 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 }
+
+
+class SignupOneScreen extends StatefulWidget {
+  const SignupOneScreen({super.key});
+
+  @override
+  State<SignupOneScreen> createState() => _SignupOneScreenState();
+}
+
+class _SignupOneScreenState extends State<SignupOneScreen> {
+  final _formKey = GlobalKey<FormState>();
+  TextEditingController firstNameController = TextEditingController();
+  TextEditingController phoneController = TextEditingController();
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  TextEditingController confirmPasswordController = TextEditingController();
+
+  String? gender;
+  File? _image;
+  final DatabaseHelper dbHelper = DatabaseHelper();
+
+  Future<void> _saveData() async {
+    if (_formKey.currentState!.validate()) {
+      bool emailExists = await dbHelper.emailExists(emailController.text);
+
+      if (emailExists) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Email already registered. Please use another email.')),
+        );
+        return;
+      }
+
+      final newUser = {
+        'firstName': firstNameController.text,
+        'phone': phoneController.text,
+        'email': emailController.text,
+        'password': passwordController.text,
+        'gender': gender,
+        'imagePath': _image?.path,
+      };
+
+      await dbHelper.insertUser(newUser);
+      print("Saved User: $newUser");
+
+      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => HomeOneScreen()));
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text("Signup")),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: [
+              TextFormField(
+                controller: firstNameController,
+                decoration: InputDecoration(labelText: "First Name"),
+                validator: (value) => value!.isEmpty ? "Enter your name" : null,
+              ),
+              TextFormField(
+                controller: phoneController,
+                decoration: InputDecoration(labelText: "Phone"),
+                validator: (value) => value!.isEmpty ? "Enter phone number" : null,
+              ),
+              TextFormField(
+                controller: emailController,
+                decoration: InputDecoration(labelText: "Email"),
+                validator: (value) => value!.isEmpty ? "Enter email" : null,
+              ),
+              TextFormField(
+                controller: passwordController,
+                obscureText: true,
+                decoration: InputDecoration(labelText: "Password"),
+                validator: (value) => value!.isEmpty ? "Enter password" : null,
+              ),
+              DropdownButtonFormField<String>(
+                value: gender,
+                decoration: InputDecoration(labelText: "Gender"),
+                items: ['Male', 'Female', 'Other'].map((e) => DropdownMenuItem(value: e, child: Text(e))).toList(),
+                onChanged: (value) => setState(() => gender = value),
+                validator: (value) => value == null ? 'Please select a gender' : null,
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _saveData,
+                child: Text("Signup"),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 
 

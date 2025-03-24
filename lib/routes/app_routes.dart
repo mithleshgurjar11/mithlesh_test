@@ -9,12 +9,16 @@ class AppRoutes{
   static const String home = '/home';
   static const String login = '/login';
   static const String signup = '/signup';
+  static const String signupOne = '/signupOne';
+  static const String homeOne = '/homeOne';
 
   static Map<String, WidgetBuilder> get routes {
     return {
       home: (context) => const HomeScreen(),
       login: (context) => LoginScreen(),
       signup: (context) => const SignupScreen(),
+      signupOne: (context) => const SignupOneScreen(),
+      homeOne: (context) => const HomeOneScreen(),
     };
   }
 
